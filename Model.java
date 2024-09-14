@@ -74,7 +74,7 @@ public class Model {
             }
         }
 
-        // ถ้ามีวัวตัวผู้ถูกเพิ่มเข้ามาในเครื่องรีดนม จะทำการนำวัวหงุดหงิดกลับไปสู่สายพานตามลำดับ
+        // ถ้ามีวัวตัวผู้ถูกเพิ่มเข้ามาในเครื่องรีดนมจะถูกคัดออก และทำการนำวัวหงุดหงิดกลับไปสู่สายพานตามลำดับ
         for (MilkingMachineStatus machine : milkingMachines) {
             Cow cow = machine.getCow();
             if (!machine.isAvailable() && isMaleCow(cow)) {
@@ -90,7 +90,7 @@ public class Model {
             moveAngryCowToQueue();
             angryCowCount = 0;
         }
-
+        
         for (MilkingMachineStatus machine : milkingMachines) {
             // อัปเดตสถานะจาก "Cleaning" เป็น "Ready"
             for (int i = 0; i < machine.status.length; i++) {
@@ -116,12 +116,22 @@ public class Model {
                     status = "Ready";
                 }
             }
+            Cow cow = machine.getCow();
             int statusID = machine.getStatusID();
-            if ((machine.status[statusID]).equals("null")) {
+            // ถ้าเครื่องรีดพยายามนำหัวเข้ากับเต้าที่ไม่มีอยู่จริงถือว่าเป็นวัวมีปัญหาจะคัดออก และทำการนำวัวหงุดหงิดกลับไปสู่สายพานตามลำดับ
+            if (cow.getUdders() > statusID) {
+                if ((machine.status[statusID]).equals("null")) {
                 machine.status[statusID] = "Cleaning";
                 machine.addStatusID();
+                }
+            } else { // เต้าน้อยกว่าเครื่องดูด
+                machine.releaseCow();
+                machine.resetMachine();
+                releaseProblemCowCount++;
+                moveAngryCowToQueue();
             }
         }
+
 
         // เพิ่มวัวเข้าเครื่องรีดจนกว่าจะเต็ม
         while (true) {
@@ -229,8 +239,9 @@ public class Model {
 
         public String toString() {
             return String.format(
-                    "<html>Cow <br>isMale: %s<br>Preferred: %s<br>Head1: %s<br>Head2: %s<br>Head3: %s<br>Head4: %s</html>",
+                    "<html>Cow <br>isMale: %s<br>Udders: %s<br>Preferred: %s<br>Head1: %s<br>Head2: %s<br>Head3: %s<br>Head4: %s</html>",
                     cow.isMale(),
+                    cow.getUdders(),
                     cow.getPreferredMachine() + 1,
                     status[0],
                     status[1],
@@ -246,7 +257,7 @@ public class Model {
         private int preferredMachine;
 
         public Cow() {
-            this.udders = 3 + (int) (Math.random() * 3); // Random between 3 - 5
+            this.udders = Math.random() < 0.05 ? 3 : Math.random() < 0.50 ? 4:5; // Random between 3 - 5
             this.isMale = Math.random() < 0.05; // Random 5% isMale
             this.preferredMachine = (int) (Math.random() * 10); // Random between 0 - 9
         }

@@ -8,25 +8,25 @@ public class Controller {
         this.view = view;
         this.model = model;
 
-        // Add ActionListener For somethingButton
+        // Add ActionListener For StartButton
         this.view.addButtonListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                /* Do Something */
-            }
-        });
-        // Add ActionListener For ComboBox
-        this.view.addComboBoxSelectionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                /* Do Something */
+                updateProcess();
             }
         });
     }
-    public void doSomething01() {
 
-    }
-    public void doSomething02() {
+    public void updateProcess() {
+        model.startMilkingProcess();
+        for (int i = 0; i < 10; i++) {
+            view.setMachineLabelText(i, String.format(model.getMachineStatus(i)));
+        }
+        view.setAngryCowCountLabelText(String.format("%d", model.getAngryCowCount()));
+        view.setCompleteCowCountLabelText(String.format("%d", model.getCompleteCowCount()));
+        view.setMilkQuantityLabelText(String.format("%.2f", model.getMilkQuantity()));
+        view.setReleaseCowCountLabelText(String.format("%d", model.getReleaseProblemCowCount()));
+        view.setInterruptCountLabelText(String.format("%d", model.getInterruptCount()));
 
     }
 
